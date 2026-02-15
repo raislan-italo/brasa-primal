@@ -3,6 +3,7 @@ import {
   Flame,
   MapPin,
   Zap,
+  User,
   ShoppingBag,
   Plus,
   Minus,
@@ -270,7 +271,12 @@ export default function HomeVitrine() {
       <div className="bg-orange-600 overflow-hidden w-full py-2 shrink-0">
         <motion.div
           animate={{ x: [0, -1000] }}
-          transition={{ repeat: Infinity, duration: 12, ease: "linear", repeatType: "loop" }}
+          transition={{
+            repeat: Infinity,
+            duration: 12,
+            ease: "linear",
+            repeatType: "loop",
+          }}
           className="flex gap-8 whitespace-nowrap font-bold uppercase text-xs tracking-wider"
         >
           {Array.from({ length: 12 }).map((_, i) => (
@@ -289,7 +295,7 @@ export default function HomeVitrine() {
           backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.35)]
           transform-gpu perspective-1000 rotate-x-0
           hover:rotate-x-1 transition-transform duration-300"
-        >
+      >
         {/* Logo */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           <img
@@ -298,33 +304,34 @@ export default function HomeVitrine() {
             className="w-16 h-16 sm:w-16 sm:h-16 lg:w-30 lg:h-20
               object-contain transition-transform duration-300
               hover:scale-105 hover:-translate-y-1 shadow-md"
-            />
+          />
           {/* nome sempre visível */}
           <span
             className="font-black
               text-lg sm:text-2xl lg:text-3xl
               text-white italic tracking-tight drop-shadow-md"
-            >
+          >
             BRASA PRIMAL
           </span>
         </div>
 
-        {/* Login / Perfial */}
+        {/* Login / Perfil */}
         <div className="flex items-center gap-2 sm:gap-3">
           {user ? (
-            <img
+            <div
               onClick={() => navigate("/cliente")}
-              src={user.user_metadata?.avatar_url || ""}
-              alt="Perfil"
-              className="
-                w- h-9 sm:w-18 sm:h-18
-                rounded-full object-cover
-                border-2 border-zinc-700
-                cursor-pointer
-                transition-transform duration-300
-                hover:scale-105 hover:-translate-y-1
-                shadow-md"
-              />
+              className="w-9 h-9 sm:w-12 sm:h-12 rounded-full border-2 border-zinc-700 overflow-hidden cursor-pointer transition-transform duration-300 hover:scale-105 hover:-translate-y-1 shadow-md flex items-center justify-center bg-zinc-800"
+            >
+              {user.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt="Perfil"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-400" />
+              )}
+            </div>
           ) : (
             <button
               onClick={() => navigate("/login")}
