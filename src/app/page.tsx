@@ -6,7 +6,6 @@ import {
   ShoppingBag,
   Plus,
   Minus,
-  User,
   Star,
   CheckCircle2,
   Copy,
@@ -27,17 +26,17 @@ import QRCode from "react-qr-code";
 export default function HomeVitrine() {
   const navigate = useNavigate();
 
-  // ESTADOS GERAIS
+  // Estados gerais
   const [user, setUser] = useState<any>(null);
   const [quantidade, setQuantidade] = useState(1);
   const [estoque, setEstoque] = useState<number>(0);
   const [carregandoEstoque, setCarregandoEstoque] = useState(true);
 
-  // ESTADOS DE GAMIFICAÇÃO
+  // Estados de gamificação
   const [brasasDisponiveis, setBrasasDisponiveis] = useState(0);
   const [usarResgate, setUsarResgate] = useState(false);
 
-  // ESTADOS DE FLUXO E PAGAMENTO
+  // Estados de fluxo de pagamento
   const [etapa, setEtapa] = useState<"produto" | "pagamento">("produto");
   const [copiado, setCopiado] = useState(false);
   const [processando, setProcessando] = useState(false);
@@ -48,12 +47,12 @@ export default function HomeVitrine() {
   const [detalhesFinais, setDetalhesFinais] = useState<any>(null);
   const [produtoAtivo, setProdutoAtivo] = useState<any>(null);
 
-  // HORÁRIO DE FUNCIONAMENTO
+  // Horário de funcionamento
   const agora = new Date();
   const horaAtual = agora.getHours();
   const estaAberto = horaAtual >= 7 && horaAtual < 22;
 
-  // 1. CARREGA DADOS, ESTOQUE E GAMIFICAÇÃO
+  // Carrega dados, Estoque e gamificação
   useEffect(() => {
     async function carregarDadosIniciais() {
       const {
@@ -79,7 +78,7 @@ export default function HomeVitrine() {
       if (session?.user && produto) {
         const precoBase = Number(produto.preco);
 
-        // A. Puxa pedidos para saber o total gasto
+        // Puxa pedidos para saber o total gasto
         const { data: pedidosUsuario } = await supabase
           .from("pedidos")
           .select("id, valor_total, status")
@@ -91,7 +90,7 @@ export default function HomeVitrine() {
 
         const brasasGeradas = Math.floor(valorGasto / precoBase);
 
-        // B. Conta os brindes já usados (itens com preço 0)
+        // Conta os brindes já usados (itens com preço 0)
         let resgatesUsados = 0;
         const pedidosIds = pedidosUsuario?.map((p) => p.id) || [];
 
@@ -114,7 +113,7 @@ export default function HomeVitrine() {
     carregarDadosIniciais();
   }, []);
 
-  // 2. ESCUTA O REALTIME
+  // Escuta o realtime
   useEffect(() => {
     if (!pedidoId || etapa !== "pagamento") return;
 
@@ -142,8 +141,9 @@ export default function HomeVitrine() {
     };
   }, [pedidoId, etapa]);
 
-  // UI HELPERS & MATEMÁTICA DE COMPRA
+  // Matemática de compra
   const precoUnitario = produtoAtivo ? Number(produtoAtivo.preco) : 0;
+
   // Se usar resgate, desconta 1 saco do valor pago
   const quantidadeCobrada = usarResgate
     ? Math.max(0, quantidade - 1)
@@ -155,7 +155,7 @@ export default function HomeVitrine() {
     currency: "BRL",
   });
 
-  // 3. LÓGICA DE COMPRA E INSERÇÃO INTELIGENTE
+  // Lógica de compra e inserção inteligente
   const gerarPedido = async () => {
     if (!user) return navigate("/login");
     if (quantidade > estoque)
@@ -165,7 +165,7 @@ export default function HomeVitrine() {
     try {
       const statusInicial = total === 0 ? "PAGO" : "AGUARDANDO_PAGAMENTO";
 
-      // 1. Cria o Pedido
+      // Cria o Pedido
       const { data: pedido, error: errPedido } = await supabase
         .from("pedidos")
         .insert({
@@ -179,7 +179,7 @@ export default function HomeVitrine() {
       if (errPedido) throw errPedido;
       setPedidoId(pedido.id);
 
-      // 2. Insere os Itens separados (O Pago e o Brinde)
+      // Insere os Itens separados (O Pago e o Brinde)
       if (produtoAtivo) {
         const itensParaInserir = [];
 
@@ -211,18 +211,19 @@ export default function HomeVitrine() {
         }
       }
 
-      // 3. Lógica de Pulo do PIX
+      // Lógica de Pulo do PIX
       if (total === 0) {
         setDetalhesFinais(pedido);
         setPedidoPago(true);
         setEtapa("pagamento");
         setProcessando(false);
+
         // Atualiza a tela localmente para evitar bugs de state
         setBrasasDisponiveis((prev) => prev - 10);
         return;
       }
 
-      // 4. Chama a Edge Function para gerar o PIX
+      // Chama a Edge Function para gerar o PIX
       const { data: pixData, error: errPix } = await supabase.functions.invoke(
         "criar-pix",
         {
@@ -236,7 +237,7 @@ export default function HomeVitrine() {
 
       if (errPix || !pixData.sucesso) throw new Error("Erro ao gerar PIX");
 
-      // 5. NOVO: Salva os dados do PIX no pedido para ele nunca mais perder
+      // NOVO: Salva os dados do PIX no pedido para ele nunca mais perder
       await supabase
         .from("pedidos")
         .update({
@@ -269,7 +270,7 @@ export default function HomeVitrine() {
       <div className="bg-orange-600 overflow-hidden w-full py-2 shrink-0">
         <motion.div
           animate={{ x: ["0%", "-50%"] }}
-          transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+          transition={{ repeat: Infinity, duration: 12, ease: "linear", repeatType: "loop" }}
           className="flex gap-8 whitespace-nowrap font-bold uppercase text-xs tracking-wider"
         >
           {Array.from({ length: 12 }).map((_, i) => (
@@ -280,44 +281,60 @@ export default function HomeVitrine() {
         </motion.div>
       </div>
 
-      <nav className="flex items-center justify-between py-2 px-4 sm:px-6 sm:py-3 lg:px-8 max-w-6xl mx-auto w-full">
-        <img
-          src="/icon-192.png"
-          alt="Brasa Primal"
-          className="
-              w-24 h-24
-              sm:w-32 sm:h-32
-              lg:w-40 lg:h-40
-              object-contain
-              shrink-0
-              -mr-1
-            "
-        />
-        <div className="flex items-center gap-3">
-          {user ? (
-            <button
-              onClick={() => navigate("/cliente")}
-              className="bg-zinc-900 pr-4 sm:pr-5 pl-1.5 py-1.5 rounded-full border border-zinc-800 text-xs sm:text-sm flex items-center gap-2 sm:gap-3 hover:bg-zinc-800 transition shadow-lg max-w-35 sm:max-w-none"
+      <nav
+        className="w-full z-50 flex items-center justify-between
+          py-2 sm:py-2.5 lg:py-3
+          px-3 sm:px-6 lg:px-8
+          bg-radial-[at_25%_25%] to-zinc-800 to-55%
+          backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.35)]
+          transform-gpu perspective-1000 rotate-x-0
+          hover:rotate-x-1 transition-transform duration-300"
+        >
+        {/* Logo */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <img
+            src="/icon-192.png"
+            alt="Brasa Primal"
+            className="w-12 h-12 sm:w-16 sm:h-16 lg:w-30 lg:h-20
+              object-contain transition-transform duration-300
+              hover:scale-105 hover:-translate-y-1 shadow-md"
+            />
+          {/* nome sempre visível */}
+          <span
+            className="font-black
+              text-lg sm:text-2xl lg:text-3xl
+              text-white italic tracking-tight drop-shadow-md"
             >
-              {user.user_metadata?.avatar_url ? (
-                <img
-                  src={user.user_metadata.avatar_url}
-                  alt="Perfil"
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-zinc-700 shrink-0"
-                />
-              ) : (
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 shrink-0">
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400" />
-                </div>
-              )}
-              <span className="font-medium truncate">
-                {user.user_metadata?.nome_completo?.split(" ")[0] || "Conta"}
-              </span>
-            </button>
+            BRASA PRIMAL
+          </span>
+        </div>
+
+        {/* Login / Perfial */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {user ? (
+            <img
+              onClick={() => navigate("/cliente")}
+              src={user.user_metadata?.avatar_url || ""}
+              alt="Perfil"
+              className="
+                w- h-9 sm:w-18 sm:h-18
+                rounded-full object-cover
+                border-2 border-zinc-700
+                cursor-pointer
+                transition-transform duration-300
+                hover:scale-105 hover:-translate-y-1
+                shadow-md"
+              />
           ) : (
             <button
               onClick={() => navigate("/login")}
-              className="bg-orange-600 hover:bg-orange-500 text-white px-5 py-2.5 rounded-full font-bold text-sm transition shadow-lg shadow-orange-500/20"
+              className="bg-orange-500 hover:bg-orange-400
+              text-white font-bold
+              py-1.5 px-3 sm:py-2 sm:px-5
+              rounded-full shadow-md shadow-orange-500/25
+              transition-transform duration-300
+              hover:-translate-y-1 active:scale-95
+              text-xs sm:text-sm"
             >
               Entrar
             </button>
