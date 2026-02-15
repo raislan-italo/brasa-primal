@@ -269,7 +269,7 @@ export default function HomeVitrine() {
 
       <div className="bg-orange-600 overflow-hidden w-full py-2 shrink-0">
         <motion.div
-          animate={{ x: ["0%", "-50%"] }}
+          animate={{ x: [0, -1000] }}
           transition={{ repeat: Infinity, duration: 12, ease: "linear", repeatType: "loop" }}
           className="flex gap-8 whitespace-nowrap font-bold uppercase text-xs tracking-wider"
         >
@@ -295,7 +295,7 @@ export default function HomeVitrine() {
           <img
             src="/icon-192.png"
             alt="Brasa Primal"
-            className="w-12 h-12 sm:w-16 sm:h-16 lg:w-30 lg:h-20
+            className="w-16 h-16 sm:w-16 sm:h-16 lg:w-30 lg:h-20
               object-contain transition-transform duration-300
               hover:scale-105 hover:-translate-y-1 shadow-md"
             />
@@ -354,7 +354,7 @@ export default function HomeVitrine() {
           <p className="text-zinc-400 max-w-xl mx-auto lg:mx-0 text-lg">
             A <strong>Brasa Primal</strong> fornece carvão premium selecionado
             com queima duradoura. Compre agora pelo site e retire em instantes
-            na nossa fábrica.
+            no nosso estabelecimento.
           </p>
 
           <motion.div
@@ -697,8 +697,7 @@ export default function HomeVitrine() {
               © {new Date().getFullYear()} Brasa Primal. Todos os direitos
               reservados.
             </p>
-            <p>Vaquejada Tech & Automation Ltda.</p>
-            <p>Desenvolvido no IFMA Campus Caxias</p>
+            <p>Desenvolvido por Raislan Ítalo</p>
           </div>
         </div>
       </footer>

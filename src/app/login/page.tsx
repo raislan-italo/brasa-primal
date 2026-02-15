@@ -1,6 +1,14 @@
 import React, { useState } from "react";
 import {
-  Flame, Mail, Lock, User, Phone, ArrowRight, Loader2, ArrowLeft, Eye, EyeOff
+  Mail,
+  Lock,
+  User,
+  Phone,
+  ArrowRight,
+  Loader2,
+  ArrowLeft,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,19 +28,19 @@ export default function AuthScreen() {
 
   const navigate = useNavigate();
 
-  // MÁSCARA DE TELEFONE: (99) 99999-9999
+  // Máscara para telefone: (99) 99999-9999
   const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let valor = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
-    
+
     if (valor.length > 11) valor = valor.slice(0, 11); // Limita a 11 dígitos
-    
+
     if (valor.length > 2) {
       valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
     }
     if (valor.length > 10) {
       valor = `${valor.slice(0, 10)}-${valor.slice(10)}`;
     }
-    
+
     setTelefone(valor);
   };
 
@@ -41,7 +49,7 @@ export default function AuthScreen() {
     setLoading(true);
     setErro("");
 
-    // VALIDAÇÕES DE FRONTEND
+    // Validações de frontend
     if (!isLogin) {
       if (nome.trim().split(" ").length < 2) {
         setErro("Por favor, informe seu nome e sobrenome.");
@@ -55,8 +63,8 @@ export default function AuthScreen() {
       }
     }
 
-    if (senha.length < 6) {
-      setErro("A senha deve ter no mínimo 6 caracteres.");
+    if (senha.length < 8) {
+      setErro("A senha deve ter no mínimo 8 caracteres.");
       setLoading(false);
       return;
     }
@@ -95,31 +103,41 @@ export default function AuthScreen() {
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
-      
-      {/* EFEITOS DE FUNDO (Brasas brilhantes) */}
+      {/* Efeitos de fundo (Brasas brilhantes) */}
       <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-orange-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-red-600/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* BOTÃO VOLTAR */}
-      <button 
+      {/* Botão voltar */}
+      <button
         onClick={() => navigate("/")}
         className="absolute top-6 left-6 text-zinc-400 hover:text-white flex items-center gap-2 text-sm transition-colors z-10"
       >
         <ArrowLeft className="w-4 h-4" /> Voltar para a loja
       </button>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md relative z-10"
       >
-        {/* LOGO E HEADER */}
+        {/* Logo e header */}
         <div className="flex flex-col items-center mb-8">
           <div className="relative">
-            <div className="absolute inset-0 bg-orange-500 blur-xl opacity-20 rounded-full animate-pulse" />
-            <div className="bg-linear-to-br from-zinc-800 to-zinc-900 p-4 rounded-3xl border border-zinc-700/50 relative shadow-2xl">
-              <Flame className="w-12 h-12 text-orange-500" />
-            </div>
+            <div className="absolute inset-0 bg-orange-900 blur-xl opacity-20 rounded-full animate-pulse" />
+            {/* logo*/}
+            <img
+              src="/icon-192.png"
+              alt="Brasa Primal"
+              className="
+                relative
+                w-25 h-20
+                sm:w-24 sm:h-24
+                md:w-28 md:h-28
+                lg:w-32 lg:h-32
+                object-contain
+                drop-shadow-[0_0_20px_rgba(249,115,22,0.45)]
+              "
+            />
           </div>
           <h2 className="text-3xl font-black text-white mt-6 tracking-tighter uppercase italic">
             Brasa Primal
@@ -131,23 +149,28 @@ export default function AuthScreen() {
 
         {/* CARD PRINCIPAL */}
         <div className="bg-zinc-900/60 backdrop-blur-xl rounded-4xl p-6 sm:p-8 shadow-2xl border border-zinc-800/80">
-          
           {/* TOGGLE PILL (Entrar / Cadastrar) */}
           <div className="flex bg-zinc-950/50 p-1 rounded-2xl mb-8 border border-zinc-800/50 relative">
-            <div 
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-xl transition-all duration-300 ease-in-out shadow-md ${isLogin ? 'left-1' : 'left-[calc(50%+2px)]'}`}
+            <div
+              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-xl transition-all duration-300 ease-in-out shadow-md ${isLogin ? "left-1" : "left-[calc(50%+2px)]"}`}
             />
             <button
               type="button"
-              onClick={() => { setIsLogin(true); setErro(""); }}
-              className={`flex-1 py-2.5 text-sm font-bold z-10 transition-colors ${isLogin ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              onClick={() => {
+                setIsLogin(true);
+                setErro("");
+              }}
+              className={`flex-1 py-2.5 text-sm font-bold z-10 transition-colors ${isLogin ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
             >
               Entrar
             </button>
             <button
               type="button"
-              onClick={() => { setIsLogin(false); setErro(""); }}
-              className={`flex-1 py-2.5 text-sm font-bold z-10 transition-colors ${!isLogin ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
+              onClick={() => {
+                setIsLogin(false);
+                setErro("");
+              }}
+              className={`flex-1 py-2.5 text-sm font-bold z-10 transition-colors ${!isLogin ? "text-white" : "text-zinc-500 hover:text-zinc-300"}`}
             >
               Cadastrar
             </button>
@@ -156,9 +179,9 @@ export default function AuthScreen() {
           {/* EXIBIÇÃO DE ERROS */}
           <AnimatePresence>
             {erro && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }} 
-                animate={{ opacity: 1, height: 'auto' }} 
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-xl mb-6 text-center font-medium overflow-hidden"
               >
@@ -173,7 +196,7 @@ export default function AuthScreen() {
               {!isLogin && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
+                  animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   className="space-y-4 overflow-hidden"
                 >
@@ -228,7 +251,7 @@ export default function AuthScreen() {
                 onChange={(e) => setSenha(e.target.value)}
                 className="w-full bg-zinc-950/50 border border-zinc-800 text-white rounded-xl py-3.5 pl-12 pr-12 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all placeholder:text-zinc-600"
               />
-              
+
               {/* OLHO PARA MOSTRAR/OCULTAR SENHA (Aparece só se houver digitação) */}
               {senha.length > 0 && (
                 <button
@@ -236,7 +259,11 @@ export default function AuthScreen() {
                   onClick={() => setMostrarSenha(!mostrarSenha)}
                   className="absolute right-4 top-3.5 text-zinc-500 hover:text-orange-500 transition-colors"
                 >
-                  {mostrarSenha ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {mostrarSenha ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
                 </button>
               )}
             </div>
