@@ -1,0 +1,21 @@
+{
+  "name": "BrasaPrimal",
+  "short_name": "brasa primal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#f97316",
+  "description": "Carvão premium sem espera.",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x341",
+      "type": "image/png"
+    }
+  ]
+}
