@@ -1,29 +1,62 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import AuthScreen from "./app/login/page";
-import HomeVitrine from "./app/page";
-import AdminDashboard from "./app/admin/page";
-import ClientDashboard from "./app/cliente/page";
+import AuthScreen from "./views/pages/AuthScreen";
+import Home from "./views/pages/Home";
+import AdminDashboard from "./views/pages/AdminDashboard";
+import AreaClient from "./views/pages/AreaClient";
 import PrivateRoute from "./routes/PrivateRoute";
-import AdminScanner from "./app/admin/AdminScanner"; 
+import AdminScanner from "./views/pages/AdminScanner";
+import AdminRoute from "./routes/AdminRoute";
+import AdminAuthScreen from "./views/pages/adminAuthScreen";
+import BotaoInstalarApp from "./views/components/ui/BotaoInstalarApp";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <BotaoInstalarApp />
       <Routes>
+        {/* Rotas públicas */}
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<AuthScreen />} />
 
         {/* Rotas Protegidas */}
-        <Route path="/" element={<HomeVitrine />} />
-        <Route path="/cliente" element={<PrivateRoute><ClientDashboard /></PrivateRoute>} />
+        <Route path="/admin/login" element={<AdminAuthScreen />} />
+
+        <Route
+          path="/cliente"
+          element={
+            <PrivateRoute>
+              <AreaClient />
+            </PrivateRoute>
+          }
+        />
 
         {/* Rotas de Administração */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        
-        {/* /admin/scanner para abrir a câmera no seu celular */}
-        <Route path="/admin/scanner" element={<AdminScanner />} />
-        
-        {/* Caso queira que o QR Code do cliente abra direto a baixa ao ser lido: */}
-        <Route path="/admin/entrega/:id" element={<AdminScanner />} />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/scanner"
+          element={
+            <AdminRoute>
+              <AdminScanner />
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/admin/entrega/:id"
+          element={
+            <AdminRoute>
+              <AdminScanner />
+            </AdminRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

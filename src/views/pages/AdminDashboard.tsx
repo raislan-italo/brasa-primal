@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   Flame,
   RefreshCcw,
@@ -9,10 +8,14 @@ import {
   Plus,
   Edit,
   Trash2,
-  Check
+  Check,
+  Package,
+  Phone,
+  Clock,
+  CheckCircle,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../lib/supabase"; // Ajuste se seu caminho for diferente
 import {
   AreaChart,
   Area,
@@ -22,172 +25,29 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-
-// 1. Tipagem Robusta
-type Pedido = {
-  id: string;
-  created_at: string;
-  status: string;
-  valor_total: number;
-  profiles: { nome: string; telefone: string } | null;
-  itens_pedido: { quantidade: number }[];
-};
-
-type Produto = {
-  id: string;
-  nome: string;
-  preco: number;
-  estoque_atual: number;
-  ativo: boolean;
-};
+import { useAdmin } from "../../controllers/adminController";
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<
-    "dashboard" | "pedidos" | "produtos" | "clientes"
-  >("dashboard");
-  const [loading, setLoading] = useState(true);
-
-  // Estados de Dados
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [produtos, setProdutos] = useState<Produto[]>([]);
-
-  // KPIs
-  const [faturamentoHoje, setFaturamentoHoje] = useState(0);
-  const [sacosVendidos, setSacosVendidos] = useState(0);
-
-  // Estados do Modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editando, setEditando] = useState<Produto | null>(null);
-  const [formData, setFormData] = useState({
-    nome: "",
-    preco: 0,
-    estoque_atual: 0,
-    ativo: true,
-  });
-
-  useEffect(() => {
-    carregarDadosGlobais();
-  }, []);
-
-  const carregarDadosGlobais = async () => {
-    setLoading(true);
-    try {
-      // A. Busca Pedidos com Join nas tabelas certas
-      const { data: dataPedidos, error: errPedidos } = await supabase
-        .from("pedidos")
-        .select(
-          `
-          id, created_at, status, valor_total, 
-          profiles (nome, telefone), 
-          itens_pedido (quantidade)
-        `,
-        )
-        .order("created_at", { ascending: false });
-
-      if (errPedidos) throw errPedidos;
-      const listaPedidos = dataPedidos as unknown as Pedido[];
-      setPedidos(listaPedidos);
-
-      // B. Busca Produtos
-      const { data: dataProdutos, error: errProdutos } = await supabase
-        .from("produtos")
-        .select("*")
-        .order("nome", { ascending: true });
-
-      if (errProdutos) throw errProdutos;
-      setProdutos(dataProdutos);
-
-      // C. Calcula KPIs de HOJE (Comparação de data segura)
-      const hojeStr = new Date().toLocaleDateString("pt-BR");
-      const pedidosHoje = listaPedidos.filter(
-        (p) =>
-          new Date(p.created_at).toLocaleDateString("pt-BR") === hojeStr &&
-          (p.status === "PAGO" || p.status === "RETIRADO"),
-      );
-
-      setFaturamentoHoje(
-        pedidosHoje.reduce((acc, p) => acc + Number(p.valor_total), 0),
-      );
-      setSacosVendidos(
-        pedidosHoje.reduce(
-          (acc, p) =>
-            acc +
-            p.itens_pedido.reduce((sum, item) => sum + item.quantidade, 0),
-          0,
-        ),
-      );
-    } catch (error: any) {
-      console.error("Erro no Admin:", error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Funções de Ação (Aprovar, Salvar, Deletar)
-  const aprovarPagamento = async (pedidoId: string) => {
-    if (!window.confirm("Confirmar recebimento do PIX?")) return;
-    const { error } = await supabase
-      .from("pedidos")
-      .update({ status: "PAGO" })
-      .eq("id", pedidoId);
-    if (!error) carregarDadosGlobais();
-  };
-
-  const salvarProduto = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editando) {
-        await supabase.from("produtos").update(formData).eq("id", editando.id);
-      } else {
-        await supabase.from("produtos").insert([formData]);
-      }
-      setIsModalOpen(false);
-      carregarDadosGlobais();
-    } catch (err) {
-      alert("Erro ao salvar" + err);
-    }
-  };
-
-  const abrirModal = (p?: Produto) => {
-    if (p) {
-      setEditando(p);
-      setFormData({
-        nome: p.nome,
-        preco: Number(p.preco),
-        estoque_atual: p.estoque_atual,
-        ativo: p.ativo,
-      });
-    } else {
-      setEditando(null);
-      setFormData({ nome: "", preco: 0, estoque_atual: 0, ativo: true });
-    }
-    setIsModalOpen(true);
-  };
-
-  // Lógica do Gráfico (Últimos 7 dias)
-  const dadosGrafico = () => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (6 - i));
-      const label = d.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-      });
-
-      const total = pedidos
-        .filter(
-          (p) =>
-            new Date(p.created_at).toLocaleDateString("pt-BR", {
-              day: "2-digit",
-              month: "2-digit",
-            }) === label &&
-            (p.status === "PAGO" || p.status === "RETIRADO"),
-        )
-        .reduce((acc, curr) => acc + Number(curr.valor_total), 0);
-
-      return { data: label, total };
-    });
-  };
+  const {
+    activeTab,
+    setActiveTab,
+    loading,
+    pedidos,
+    produtos,
+    faturamentoHoje,
+    sacosVendidos,
+    isModalOpen,
+    setIsModalOpen,
+    editando,
+    formData,
+    setFormData,
+    carregarDadosGlobais,
+    aprovarPagamento,
+    abrirModal,
+    salvarProduto,
+    deletarProduto,
+    dadosGrafico,
+  } = useAdmin();
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white flex flex-col md:flex-row font-sans">
@@ -249,7 +109,7 @@ export default function AdminDashboard() {
                       Vendas Hoje
                     </p>
                     <p className="text-3xl font-black text-green-500">
-                      R$ {faturamentoHoje.toFixed(2)}
+                      R$ {faturamentoHoje.toFixed(2).replace(".", ",")}
                     </p>
                   </div>
                   <div className="bg-zinc-900 p-6 rounded-3xl border border-zinc-800">
@@ -268,7 +128,7 @@ export default function AdminDashboard() {
 
                 <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-3xl h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={dadosGrafico()}>
+                    <AreaChart data={dadosGrafico}>
                       <defs>
                         <linearGradient id="color" x1="0" y1="0" x2="0" y2="1">
                           <stop
@@ -326,56 +186,66 @@ export default function AdminDashboard() {
                 key="ped"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden"
+                className="bg-zinc-900 rounded-3xl border border-zinc-800 overflow-hidden shadow-2xl"
               >
                 <table className="w-full text-left">
-                  <thead className="bg-zinc-950 text-zinc-500 text-xs uppercase font-bold">
+                  <thead className="bg-zinc-950 text-zinc-500 text-xs uppercase font-bold border-b border-zinc-800">
                     <tr>
                       <th className="p-5">Cliente</th>
                       <th className="p-5">Itens</th>
                       <th className="p-5">Valor</th>
                       <th className="p-5">Status</th>
-                      <th className="p-5">Ações</th>
+                      <th className="p-5 text-right">Ações</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
                     {pedidos.map((p) => (
                       <tr
                         key={p.id}
-                        className="border-t border-zinc-800 hover:bg-zinc-800/20"
+                        className="border-b border-zinc-800/50 hover:bg-zinc-800/20"
                       >
                         <td className="p-5">
                           <p className="font-bold">
                             {p.profiles?.nome || "S/ Nome"}
                           </p>
-                          <p className="text-zinc-500 text-xs">
-                            {p.profiles?.telefone}
+                          <p className="text-zinc-500 text-xs flex items-center gap-1">
+                            <Phone className="w-3 h-3" />{" "}
+                            {p.profiles?.telefone || "N/A"}
                           </p>
                         </td>
-                        <td className="p-5 font-bold">
+                        <td className="p-5 font-bold flex items-center gap-2">
+                          <Package className="w-4 h-4 text-orange-500" />
                           {p.itens_pedido.reduce(
                             (acc, i) => acc + i.quantidade,
                             0,
                           )}{" "}
                           un.
                         </td>
-                        <td className="p-5 font-black">
-                          R$ {p.valor_total.toFixed(2)}
+                        <td className="p-5 font-black text-lg">
+                          R$ {p.valor_total.toFixed(2).replace(".", ",")}
                         </td>
                         <td className="p-5">
-                          <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-bold ${p.status === "PAGO" ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"}`}
-                          >
-                            {p.status}
-                          </span>
+                          {p.status === "AGUARDANDO_PAGAMENTO" ? (
+                            <span className="inline-flex items-center gap-1.5 bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-full text-xs font-bold">
+                              <Clock className="w-3 h-3" /> Aguardando PIX
+                            </span>
+                          ) : p.status === "PAGO" ? (
+                            <span className="inline-flex items-center gap-1.5 bg-green-500/10 text-green-500 px-3 py-1 rounded-full text-xs font-bold">
+                              <CheckCircle className="w-3 h-3" /> Liberado
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 bg-zinc-800 text-zinc-400 px-3 py-1 rounded-full text-xs font-bold">
+                              <CheckCircle className="w-3 h-3" /> Retirado
+                            </span>
+                          )}
                         </td>
-                        <td className="p-5">
+                        <td className="p-5 text-right">
                           {p.status === "AGUARDANDO_PAGAMENTO" && (
                             <button
                               onClick={() => aprovarPagamento(p.id)}
-                              className="bg-green-600 p-2 rounded-lg hover:bg-green-500 transition-all"
+                              className="bg-green-600 px-4 py-2 rounded-xl hover:bg-green-500 transition-all font-bold shadow-lg shadow-green-900/20 text-xs"
                             >
-                              <Check className="w-4 h-4" />
+                              Aprovar PIX
                             </button>
                           )}
                         </td>
@@ -396,7 +266,7 @@ export default function AdminDashboard() {
                 <div className="flex justify-end">
                   <button
                     onClick={() => abrirModal()}
-                    className="bg-orange-600 px-4 py-2 rounded-xl font-bold flex items-center gap-2 text-sm shadow-lg shadow-orange-600/20"
+                    className="bg-orange-600 px-4 py-2 rounded-xl font-bold flex items-center gap-2 text-sm shadow-lg shadow-orange-600/20 active:scale-95 transition-all"
                   >
                     <Plus className="w-4 h-4" /> Novo Produto
                   </button>
@@ -419,14 +289,7 @@ export default function AdminDashboard() {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => {
-                              if (window.confirm("Excluir?"))
-                                supabase
-                                  .from("produtos")
-                                  .delete()
-                                  .eq("id", p.id)
-                                  .then(() => carregarDadosGlobais());
-                            }}
+                            onClick={() => deletarProduto(p.id)}
                             className="text-zinc-500 hover:text-red-500"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -435,7 +298,7 @@ export default function AdminDashboard() {
                       </div>
                       <h4 className="font-bold text-lg">{p.nome}</h4>
                       <p className="text-orange-500 font-black text-xl mb-4">
-                        R$ {Number(p.preco).toFixed(2)}
+                        R$ {Number(p.preco).toFixed(2).replace(".", ",")}
                       </p>
                       <div className="flex justify-between items-center text-xs font-bold text-zinc-500 uppercase">
                         <span>Estoque</span>
@@ -456,18 +319,27 @@ export default function AdminDashboard() {
         </div>
       </main>
 
-      {/* MODAL RESPONSIVO */}
+      {/* Modal responsivo para produtos */}
       <AnimatePresence>
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
             <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
               className="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl"
             >
-              <h3 className="text-2xl font-black mb-6 uppercase italic">
-                Gerenciar Produto
-              </h3>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-black uppercase italic">
+                  {editando ? "Editar Item" : "Novo Produto"}
+                </h3>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-zinc-500 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
               <form onSubmit={salvarProduto} className="space-y-4">
                 <input
                   placeholder="Nome"
@@ -481,6 +353,7 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <input
                     type="number"
+                    step="0.01"
                     placeholder="Preço"
                     className="w-full bg-zinc-950 p-4 rounded-2xl border border-zinc-800 outline-none focus:border-orange-500"
                     value={formData.preco}
@@ -515,7 +388,7 @@ export default function AdminDashboard() {
                     }
                     className="w-5 h-5 accent-orange-500"
                   />
-                  <span className="text-sm font-bold uppercase">
+                  <span className="text-sm font-bold uppercase text-zinc-300">
                     Ativo para venda
                   </span>
                 </label>
@@ -529,9 +402,9 @@ export default function AdminDashboard() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-orange-600 py-4 rounded-2xl font-bold uppercase text-xs shadow-lg shadow-orange-600/20"
+                    className="flex-1 bg-orange-600 hover:bg-orange-500 py-4 rounded-2xl font-bold uppercase text-xs shadow-lg shadow-orange-600/20 transition-all flex items-center justify-center gap-2"
                   >
-                    Salvar
+                    <Check className="w-4 h-4" /> Salvar
                   </button>
                 </div>
               </form>

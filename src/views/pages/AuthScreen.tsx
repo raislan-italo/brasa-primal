@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import {
   Mail,
   Lock,
@@ -10,96 +9,29 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { supabase } from "../lib/supabase";
-
+import { useAuthController } from "../../controllers/authController";
 export default function AuthScreen() {
-  const [isLogin, setIsLogin] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [erro, setErro] = useState("");
-  const [mostrarSenha, setMostrarSenha] = useState(false);
-
-  // Estados dos inputs
-  const [nome, setNome] = useState("");
-  const [telefone, setTelefone] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-
-  const navigate = useNavigate();
-
-  // Máscara para telefone: (99) 99999-9999
-  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let valor = e.target.value.replace(/\D/g, ""); // Remove tudo que não é número
-
-    if (valor.length > 11) valor = valor.slice(0, 11); // Limita a 11 dígitos
-
-    if (valor.length > 2) {
-      valor = `(${valor.slice(0, 2)}) ${valor.slice(2)}`;
-    }
-    if (valor.length > 10) {
-      valor = `${valor.slice(0, 10)}-${valor.slice(10)}`;
-    }
-
-    setTelefone(valor);
-  };
-
-  const handleAuth = async (e: React.SyntheticEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setErro("");
-
-    // Validações de frontend
-    if (!isLogin) {
-      if (nome.trim().split(" ").length < 2) {
-        setErro("Por favor, informe seu nome e sobrenome.");
-        setLoading(false);
-        return;
-      }
-      if (telefone.replace(/\D/g, "").length < 10) {
-        setErro("Informe um número de WhatsApp válido com DDD.");
-        setLoading(false);
-        return;
-      }
-    }
-
-    if (senha.length < 8) {
-      setErro("A senha deve ter no mínimo 8 caracteres.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password: senha,
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password: senha,
-          options: {
-            data: { nome_completo: nome, telefone: telefone },
-          },
-        });
-        if (error) throw error;
-      }
-      navigate("/");
-    } catch (err: any) {
-      // Tradução de erros comuns do Supabase
-      if (err.message.includes("Invalid login credentials")) {
-        setErro("E-mail ou senha incorretos.");
-      } else if (err.message.includes("User already registered")) {
-        setErro("Este e-mail já está cadastrado.");
-      } else {
-        setErro(err.message || "Ocorreu um erro na autenticação.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Desestrutura toda a inteligência do Controller
+  const {
+    isLogin,
+    setIsLogin,
+    loading,
+    erro,
+    setErro,
+    mostrarSenha,
+    setMostrarSenha,
+    nome,
+    setNome,
+    telefone,
+    handleTelefoneChange,
+    email,
+    setEmail,
+    senha,
+    setSenha,
+    handleAuth,
+    navigate,
+  } = useAuthController();
 
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -124,19 +56,11 @@ export default function AuthScreen() {
         <div className="flex flex-col items-center mb-8">
           <div className="relative">
             <div className="absolute inset-0 bg-orange-900 blur-xl opacity-20 rounded-full animate-pulse" />
-            {/* logo*/}
+            {/* logo */}
             <img
               src="/icon-192.png"
               alt="Brasa Primal"
-              className="
-                relative
-                w-25 h-20
-                sm:w-24 sm:h-24
-                md:w-28 md:h-28
-                lg:w-32 lg:h-32
-                object-contain
-                drop-shadow-[0_0_20px_rgba(249,115,22,0.45)]
-              "
+              className="relative w-25 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.45)]"
             />
           </div>
           <h2 className="text-3xl font-black text-white mt-6 tracking-tighter uppercase italic">
@@ -147,9 +71,9 @@ export default function AuthScreen() {
           </p>
         </div>
 
-        {/* CARD PRINCIPAL */}
+        {/* Card principal */}
         <div className="bg-zinc-900/60 backdrop-blur-xl rounded-4xl p-6 sm:p-8 shadow-2xl border border-zinc-800/80">
-          {/* TOGGLE PILL (Entrar / Cadastrar) */}
+          {/* Toggle Pill (Entrar / Cadastrar) */}
           <div className="flex bg-zinc-950/50 p-1 rounded-2xl mb-8 border border-zinc-800/50 relative">
             <div
               className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-zinc-800 rounded-xl transition-all duration-300 ease-in-out shadow-md ${isLogin ? "left-1" : "left-[calc(50%+2px)]"}`}
@@ -176,7 +100,7 @@ export default function AuthScreen() {
             </button>
           </div>
 
-          {/* EXIBIÇÃO DE ERROS */}
+          {/* Exibição de erros */}
           <AnimatePresence>
             {erro && (
               <motion.div
@@ -190,7 +114,7 @@ export default function AuthScreen() {
             )}
           </AnimatePresence>
 
-          {/* FORMULÁRIO */}
+          {/* Formulário */}
           <form className="space-y-4" onSubmit={handleAuth}>
             <AnimatePresence mode="popLayout">
               {!isLogin && (
@@ -220,7 +144,7 @@ export default function AuthScreen() {
                       required={!isLogin}
                       value={telefone}
                       onChange={handleTelefoneChange}
-                      maxLength={15} // (99) 99999-9999 = 15 chars
+                      maxLength={15}
                       className="w-full bg-zinc-950/50 border border-zinc-800 text-white rounded-xl py-3.5 pl-12 pr-4 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all placeholder:text-zinc-600"
                     />
                   </div>
@@ -252,7 +176,7 @@ export default function AuthScreen() {
                 className="w-full bg-zinc-950/50 border border-zinc-800 text-white rounded-xl py-3.5 pl-12 pr-12 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all placeholder:text-zinc-600"
               />
 
-              {/* OLHO PARA MOSTRAR/OCULTAR SENHA (Aparece só se houver digitação) */}
+              {/* Olho para mostrar/ocultar senha */}
               {senha.length > 0 && (
                 <button
                   type="button"
