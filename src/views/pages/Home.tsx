@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import QRCode from "react-qr-code";
-// import BotaoInstalarApp from "../../components/BotaoInstalarApp";
 import { scaleIn, fadeUp } from "../../animation";
 import { useHomeController } from "../../controllers/homeController";
 
@@ -51,6 +50,8 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden flex flex-col">
+
+      { /* Animação(Carrossel) do topo da página */}
       <div className="bg-orange-600 overflow-hidden w-full py-2 shrink-0">
         <motion.div
           animate={{ x: [0, -1000] }}
@@ -64,23 +65,29 @@ export default function Home() {
         >
           {Array.from({ length: 12 }).map((_, i) => (
             <span key={i}>
-              🔥 Qualidade Primal • Retirada Rápida • 100% Natural
+              Qualidade Primal • Retirada Rápida • 100% Natural
             </span>
           ))}
         </motion.div>
       </div>
 
-      <nav className="w-full z-50 flex items-center justify-between py-2 sm:py-2.5 lg:py-3 px-3 sm:px-6 lg:px-8 bg-radial-[at_25%_25%] to-zinc-800 to-55% backdrop-blur-md shadow-[0_6px_20px_rgba(0,0,0,0.35)] transform-gpu perspective-1000 rotate-x-0 hover:rotate-x-1 transition-transform duration-300">
+      <nav className="w-full z-50 flex items-center justify-between py-2 sm:py-2.5 lg:py-3 px-3 sm:px-6 lg:px-8 bg-radial-[at_25%_15%] to-zinc-700">
+
+        {/* Área da logo do site */}
         <div className="flex items-center gap-1.5 sm:gap-1">
           <img
-            src="/icon-512.png"
-            alt="Brasa Primal"
-            className="w-16 h-16 sm:w-16 sm:h-16 lg:w-30 lg:h-20 object-contain transition-transform duration-300 hover:scale-105 hover:-translate-y-1 shadow-md"
+            src="icon-512.png"
+            alt="Logo Brasa Primal"
+            className="w-16 h-16 sm:w-16 sm:h-16 lg:w-18 lg:h-18
+            rounded-full object-cover transition-transform duration-300 hover:scale-105 hover:-translate-y-1 shadow-md"
           />
           <span className="font-black text-lg sm:text-2xl lg:text-3xl text-white italic tracking-tight drop-shadow-md">
             BRASA PRIMAL
           </span>
+          
         </div>
+
+
         <div className="flex items-center gap-2 sm:gap-3">
           {user ? (
             <div

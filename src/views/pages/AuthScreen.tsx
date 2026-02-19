@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthController } from "../../controllers/authController";
+
 export default function AuthScreen() {
   // Desestrutura toda a inteligência do Controller
   const {
@@ -58,7 +59,7 @@ export default function AuthScreen() {
             <div className="absolute inset-0 bg-orange-900 blur-xl opacity-20 rounded-full animate-pulse" />
             {/* logo */}
             <img
-              src="/icon-192.png"
+              src="/icon-512.png"
               alt="Brasa Primal"
               className="relative w-25 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain drop-shadow-[0_0_20px_rgba(249,115,22,0.45)]"
             />
