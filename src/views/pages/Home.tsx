@@ -47,14 +47,14 @@ export default function Home() {
     gerarPedido,
     copiarPix,
   } = useHomeController();
-
+  const primeiroNome = user?.user_metadata?.nome_completo?.split(" ")[0];
+  
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden flex flex-col">
-
-      { /* Animação(Carrossel) do topo da página */}
+    <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden flex flex-col font-source">
+      {/* Animação(Carrossel) do topo da página */}
       <div className="bg-orange-600 overflow-hidden w-full py-2 shrink-0">
         <motion.div
-          animate={{ x: [0, -1000] }}
+          animate={{ x: [-1000, 0] }}
           transition={{
             repeat: Infinity,
             duration: 12,
@@ -71,28 +71,29 @@ export default function Home() {
         </motion.div>
       </div>
 
-      <nav className="w-full z-50 flex items-center justify-between py-2 sm:py-2.5 lg:py-3 px-3 sm:px-6 lg:px-8 bg-radial-[at_25%_15%] to-zinc-700">
-
+      <nav className="w-full z-50 flex items-center justify-between  py-2 sm:py-2.5 lg:py-3 px-3 sm:px-6 lg:px-8 bg-radial-[at_25%_15%] to-zinc-700">
         {/* Área da logo do site */}
-        <div className="flex items-center gap-1.5 sm:gap-1">
+        <div className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-zinc-800 shadow-xl/30 shadow-black hover:scale-105 hover:cursor-pointer transition-transform duration-300">
           <img
             src="icon-512.png"
             alt="Logo Brasa Primal"
-            className="w-16 h-16 sm:w-16 sm:h-16 lg:w-18 lg:h-18
-            rounded-full object-cover transition-transform duration-300 hover:scale-105 hover:-translate-y-1 shadow-md"
+            className="w-12 h-12 sm:w-16 sm:h-16   
+            rounded-full object-cover shadow-md"
           />
-          <span className="font-black text-lg sm:text-2xl lg:text-3xl text-white italic tracking-tight drop-shadow-md">
+          <span className="text-sm sm:text-2xl lg:text-2xl text-white tracking-wide drop-shadow-md font-opes mr-5 whitespace-nowrap">
             BRASA PRIMAL
           </span>
-          
         </div>
 
-
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Área do perfil do usuário */}
+        <div
+          onClick={() => navigate("/cliente")}
+          className={`flex items-center ${user ? "border-2 border-orange-500 p-1 gap-2 sm:gap-3 bg-zinc-800" : ""} rounded-4xl hover:cursor-pointer transition-transform hover:scale-102 duration-500`}
+        >
           {user ? (
             <div
-              onClick={() => navigate("/cliente")}
-              className="w-9 h-9 sm:w-12 sm:h-12 rounded-full border-2 border-zinc-700 overflow-hidden cursor-pointer transition-transform duration-300 hover:scale-105 hover:-translate-y-1 shadow-md flex items-center justify-center bg-zinc-800"
+              className= {`w-9 h-9 sm:w-13 sm:h-13 rounded-full overflow-hidden shadow-xl/ shadow-amber-50 flex items-center justify-center
+              ${!user.user_metadata?.avatar_url ? " bg-gray-600" : ""}`}
             >
               {user.user_metadata?.avatar_url ? (
                 <img
@@ -101,17 +102,20 @@ export default function Home() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="w-5 h-5 sm:w-6 sm:h-6 text-zinc-400" />
-              )}
+                <User className="w-8 h-8 text-white "/>
+              ) }
             </div>
           ) : (
             <button
               onClick={() => navigate("/login")}
-              className="bg-orange-500 hover:bg-orange-400 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-5 rounded-full shadow-md shadow-orange-500/25 transition-transform duration-300 hover:-translate-y-1 active:scale-95 text-xs sm:text-sm"
+              className="bg-orange-500 hover:bg-orange-400 text-white font-bold py-1.5 px-3 sm:py-2 sm:px-5 rounded-full shadow-md shadow-orange-500/25 text-xs sm:text-sm cursor-pointer"
             >
               Entrar
             </button>
           )}
+          <span className="text-md sm:text-xl text-white whitespace-nowrap mr-2">
+            { user ? primeiroNome : ""}
+          </span>
         </div>
       </nav>
 
@@ -120,12 +124,12 @@ export default function Home() {
           <div className="inline-flex gap-2 bg-orange-500/10 px-4 py-1.5 rounded-full text-orange-400 text-sm font-medium border border-orange-500/20">
             <Zap className="w-4 h-4" /> Drive-Thru do Churrasco em Caxias
           </div>
-          <h1 className="font-extrabold text-5xl lg:text-7xl leading-tight uppercase tracking-tighter">
+          <h1 className="font-extrabold text-5xl lg:text-7xl leading-tight uppercase tracking-tighter ">
             O Fogo Perfeito <br />
             <span className="text-orange-500">Sem Espera.</span>
           </h1>
           <p className="text-zinc-400 max-w-xl mx-auto lg:mx-0 text-lg">
-            A <strong>Brasa Primal</strong> fornece carvão premium selecionado
+            A <strong>Brasa Primal</strong> fornece carvão primal selecionado
             com queima duradoura. Compre agora pelo site e retire em instantes
             no nosso estabelecimento.
           </p>
