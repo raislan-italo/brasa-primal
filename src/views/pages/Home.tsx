@@ -15,11 +15,19 @@ import {
   Clock,
   Leaf,
   Gift,
+  MapPinned,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import QRCode from "react-qr-code";
 import { scaleIn, fadeUp } from "../../animation";
 import { useHomeController } from "../../controllers/homeController";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import { Autoplay } from "swiper/modules";
 
 export default function Home() {
   const {
@@ -48,18 +56,27 @@ export default function Home() {
     copiarPix,
   } = useHomeController();
   const primeiroNome = user?.user_metadata?.nome_completo?.split(" ")[0];
-  
+
+  const imagensCarvao = Object.values(
+    import.meta.glob<string>(
+      "/src/assets/imgs/carvao-imgs/*.{jpg, png, jpeg}",
+      {
+        eager: true,
+        import: "default",
+      },
+    ),
+  );
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white overflow-x-hidden flex flex-col font-source">
       {/* Animação(Carrossel) do topo da página */}
-      <div className="bg-orange-600 overflow-hidden w-full py-2 shrink-0">
+      <div className="bg-orange-600 overflow-hidden w-full py-2">
         <motion.div
-          animate={{ x: [-1000, 0] }}
+          animate={{ x: ["0%", "-50%"] }}
           transition={{
             repeat: Infinity,
             duration: 12,
             ease: "linear",
-            repeatType: "loop",
           }}
           className="flex gap-8 whitespace-nowrap font-bold uppercase text-xs tracking-wider"
         >
@@ -92,7 +109,7 @@ export default function Home() {
         >
           {user ? (
             <div
-              className= {`w-9 h-9 sm:w-13 sm:h-13 rounded-full overflow-hidden shadow-xl/ shadow-amber-50 flex items-center justify-center
+              className={`w-9 h-9 sm:w-13 sm:h-13 rounded-full overflow-hidden shadow-xl/ shadow-amber-50 flex items-center justify-center
               ${!user.user_metadata?.avatar_url ? " bg-gray-600" : ""}`}
             >
               {user.user_metadata?.avatar_url ? (
@@ -102,8 +119,8 @@ export default function Home() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <User className="w-8 h-8 text-white "/>
-              ) }
+                <User className="w-5 h-5 sm:w-8 sm:h-8  text-white " />
+              )}
             </div>
           ) : (
             <button
@@ -114,26 +131,31 @@ export default function Home() {
             </button>
           )}
           <span className="text-md sm:text-xl text-white whitespace-nowrap mr-2">
-            { user ? primeiroNome : ""}
+            {primeiroNome}
           </span>
         </div>
       </nav>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid gap-12 lg:gap-16 items-center lg:grid-cols-2 mt-10 mb-20 flex-1 w-full">
         <div className="space-y-6 text-center lg:text-left">
+          {/* Badge com o destaque do e-comerce */}
           <div className="inline-flex gap-2 bg-orange-500/10 px-4 py-1.5 rounded-full text-orange-400 text-sm font-medium border border-orange-500/20">
-            <Zap className="w-4 h-4" /> Drive-Thru do Churrasco em Caxias
+            <Zap className="w-4 h-4" /> O primeiro e-comerce de carvão em
+            Caxias-MA
           </div>
-          <h1 className="font-extrabold text-5xl lg:text-7xl leading-tight uppercase tracking-tighter ">
+
+          <h1 className="font-bold text-5xl lg:text-6xl leading-tight uppercase tracking-wide font-bree">
             O Fogo Perfeito <br />
-            <span className="text-orange-500">Sem Espera.</span>
+            <span className="text-orange-500">Para Quem Não Aceita Menos</span>
           </h1>
+
           <p className="text-zinc-400 max-w-xl mx-auto lg:mx-0 text-lg">
-            A <strong>Brasa Primal</strong> fornece carvão primal selecionado
-            com queima duradoura. Compre agora pelo site e retire em instantes
-            no nosso estabelecimento.
+            A <strong>Brasa Primal</strong> entrega o Carvão Primal™ mais
+            potente de Caxias: queima longa, brasa uniforme, sem faísca
+            indesejada. Compre online e retire imediatamente na nossa base.
           </p>
 
+          {/* Área da localização de retirada */}
           <motion.div
             variants={fadeUp}
             initial="hidden"
@@ -144,16 +166,19 @@ export default function Home() {
               <div className="bg-orange-500/10 p-3 rounded-2xl">
                 <MapPin className="text-orange-500 w-6 h-6" />
               </div>
+
+              {/* Conteúdo do card */}
               <div className="text-left flex-1">
                 <div className="flex items-center justify-between mb-1">
                   <h4 className="font-bold text-lg text-white">
                     Ponto de Retirada
                   </h4>
+
                   <div
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${estaAberto ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}
+                    className={`flex gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-black uppercase tracking-wider ${estaAberto ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}
                   >
                     <span
-                      className={`w-1.5 h-1.5 rounded-full animate-pulse ${estaAberto ? "bg-green-500" : "bg-red-500"}`}
+                      className={`mt-1 w-2 h-2 rounded-full animate-pulse ${estaAberto ? "bg-green-500" : "bg-red-500"}`}
                     />
                     {estaAberto ? "Aberto" : "Fechado"}
                   </div>
@@ -163,6 +188,7 @@ export default function Home() {
                 </p>
               </div>
             </div>
+
             <button
               onClick={() =>
                 window.open(
@@ -170,9 +196,10 @@ export default function Home() {
                   "_blank",
                 )
               }
-              className="w-full flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 py-3.5 rounded-xl text-sm font-bold transition"
+              className="w-full flex items-center justify-center gap-2 bg-amber-800  hover:bg-amber-700 py-3.5 rounded-xl text-sm font-bold transition cursor-pointer"
             >
-              <Zap className="w-4 h-4 text-orange-400" /> Abrir no GPS
+              <MapPinned className="w-4 h-4 text-white" />
+              Abrir no Maps
             </button>
           </motion.div>
         </div>
@@ -193,19 +220,46 @@ export default function Home() {
                   exit={{ opacity: 0, x: 20 }}
                   className="flex flex-col h-full"
                 >
-                  <div className="w-full h-48 bg-linear-to-b from-orange-500/10 to-transparent rounded-2xl mb-6 flex items-center justify-center border border-orange-500/10 relative">
-                    <Flame className="w-20 h-20 text-orange-500 drop-shadow-[0_0_15px_rgba(249,115,22,0.5)]" />
-                    <div className="absolute top-4 right-4 bg-zinc-950/80 backdrop-blur border border-zinc-800 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
+                  <div className="w-full h-48 rounded-2xl mb-6 border border-orange-500/10 relative overflow-hidden">
+                    {/* Swiper */}
+                    <Swiper
+                      modules={[Autoplay]}
+                      autoplay={{
+                        delay: 1500, // tempo entre slides (2.5s)
+                        disableOnInteraction: false, // NÃO para quando o usuário toca
+                        pauseOnMouseEnter: false, // não pausa ao passar mouse
+                      }}
+                      speed={2000}
+                      pagination={{ clickable: true }}
+                      loop
+                      className="w-full h-full"
+                    >
+                      {imagensCarvao.map((img, index) => (
+                        <SwiperSlide key={index}>
+                          <img
+                            src={img}
+                            alt={`Carvão ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </SwiperSlide>
+                      ))}
+                    </Swiper>
+
+                    {/* Overlay Gradiente opcional (deixa mais premium) */}
+                    <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
+
+                    {/* Badge Estoque */}
+                    <div className="absolute top-4 right-4 bg-zinc-950/80 backdrop-blur border border-zinc-800 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 z-20">
                       {carregandoEstoque ? (
                         <Loader2 className="w-3 h-3 animate-spin text-zinc-500" />
                       ) : estoque > 0 ? (
                         <>
-                          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />{" "}
-                          {estoque} disponíveis
+                          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                          {estoque} {estoque > 1 ? "disponíveis" : "disponível"}
                         </>
                       ) : (
                         <>
-                          <span className="w-2 h-2 rounded-full bg-red-500" />{" "}
+                          <span className="w-2 h-2 rounded-full bg-red-500" />
                           Esgotado
                         </>
                       )}
